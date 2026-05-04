@@ -1,7 +1,4 @@
-use std::{
-    ops::Deref,
-    time::{Duration, Instant},
-};
+use std::time::{Duration, Instant};
 
 use engine::prelude::*;
 use g4_derive::Component;

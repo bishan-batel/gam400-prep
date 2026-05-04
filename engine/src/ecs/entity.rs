@@ -1,8 +1,7 @@
 use std::{
     any::TypeId,
     cell::{Ref, RefCell, RefMut},
-    ops::Deref,
-    sync::atomic::{AtomicU32, AtomicUsize, Ordering},
+    sync::atomic::{AtomicU32, Ordering},
 };
 
 use hashbrown::HashMap;
