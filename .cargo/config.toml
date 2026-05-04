@@ -1,0 +1,29 @@
+[target.x86_64-unknown-linux-gnu]
+linker = "clang"
+rustflags = [
+	"-C", 
+	"link-arg=-fuse-ld=lld",
+	# let different crates share crate monomorphizations
+  "-Zshare-generics=y",
+]
+
+[target.aarch64-unknown-linux-gnu]
+linker = "clang"
+rustflags = [
+	"-C", 
+	"link-arg=-fuse-ld=lld",
+	# let different crates share crate monomorphizations
+  "-Zshare-generics=y",
+]
+
+[target.aarch64-apple-darwin]
+rustflags = [
+	# let different crates share crate monomorphizations
+  # "-Zshare-generics=y",
+]
+
+	
+
+# for Windows
+[target.x86_64-pc-windows-msvc]
+linker = "rust-lld.exe"
