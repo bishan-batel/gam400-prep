@@ -2,21 +2,23 @@ use std::{
     any::TypeId,
     cell::{Ref, RefCell, RefMut},
     ops::Deref,
+    sync::atomic::{AtomicU32, AtomicUsize, Ordering},
 };
 
 use hashbrown::HashMap;
 
-use crate::ecs::component::Component;
+use crate::ecs::component::{Component, ComponentList};
 use std::any::Any;
 
 #[derive(displaydoc::Display, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[displaydoc("{0}")]
 pub struct EntityID(pub(crate) u32);
 
+static GLOBAL_ID_COUNTER: AtomicU32 = AtomicU32::new(0);
+
 impl EntityID {
-    #[must_use]
-    pub fn from_index(idx: usize) -> Self {
-        Self(idx as u32)
+    pub unsafe fn unique() -> Self {
+        EntityID(GLOBAL_ID_COUNTER.fetch_add(1, Ordering::Relaxed))
     }
 
     #[must_use]
@@ -25,18 +27,20 @@ impl EntityID {
     }
 }
 
+#[derive(Debug)]
 pub struct Entity {
     components: HashMap<TypeId, Box<RefCell<dyn Component>>>,
 }
 
 impl Entity {
-    fn empty() -> Self {
+    pub fn empty() -> Self {
         Self {
             components: Default::default(),
         }
     }
 
-    pub fn add<T: Component>(mut self, component: T) -> Self {
+    /// adds a component
+    pub fn add<T: Component>(&mut self, component: T) -> &mut Self {
         let id = component.type_id();
         let component = Box::new(RefCell::<T>::new(component));
         self.components.insert(id, component);
@@ -64,51 +68,13 @@ impl Entity {
     }
 }
 
-// impl<T: Component> From<T> for Entity {
-//     fn from(value: T) -> Self {
-//         Self::empty().add(value)
-//     }
-// }
-
-impl<T1: Component> From<(T1,)> for Entity {
-    fn from(value: (T1,)) -> Self {
-        Self::empty().add(value.0)
-    }
-}
-
-impl<T1, T2> From<(T1, T2)> for Entity
+impl<T> From<T> for Entity
 where
-    T1: Component,
-    T2: Component,
+    T: ComponentList,
 {
-    fn from(value: (T1, T2)) -> Self {
-        Self::empty().add(value.0).add(value.1)
-    }
-}
-
-impl<T1, T2, T3> From<(T1, T2, T3)> for Entity
-where
-    T1: Component,
-    T2: Component,
-    T3: Component,
-{
-    fn from(value: (T1, T2, T3)) -> Self {
-        Self::empty().add(value.0).add(value.1).add(value.2)
-    }
-}
-
-impl<T1, T2, T3, T4> From<(T1, T2, T3, T4)> for Entity
-where
-    T1: Component,
-    T2: Component,
-    T3: Component,
-    T4: Component,
-{
-    fn from(value: (T1, T2, T3, T4)) -> Self {
-        Self::empty()
-            .add(value.0)
-            .add(value.1)
-            .add(value.2)
-            .add(value.3)
+    fn from(value: T) -> Self {
+        let mut entity = Entity::empty();
+        value.insert(&mut entity);
+        entity
     }
 }

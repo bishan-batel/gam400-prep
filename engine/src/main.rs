@@ -3,12 +3,13 @@ use std::{
     time::{Duration, Instant},
 };
 
-use engine::{ecs::component::Component, prelude::*};
+use engine::prelude::*;
+use g4_derive::Component;
 
-#[derive(Debug)]
+#[derive(Debug, Component)]
 struct Health(usize);
 
-#[derive(Debug)]
+#[derive(Debug, Component)]
 struct Name(String);
 
 fn main() -> eyre::Result<()> {
@@ -18,8 +19,7 @@ fn main() -> eyre::Result<()> {
 
     let mut world = World::default();
 
-    world.add((Health(0),));
-
+    world.add(Health(0));
     world.add((Health(42), Name("hi".into())));
 
     loop {
@@ -30,7 +30,7 @@ fn main() -> eyre::Result<()> {
                 println!("health={health:?}")
             }
 
-            for mut name in world.query_component::<Name>() {
+            for name in world.query_component::<Name>() {
                 println!("{name:?}")
             }
         }

@@ -3,14 +3,9 @@ use std::cell::{Ref, RefMut};
 use hashbrown::HashMap;
 
 use crate::ecs::{
-    component::Component,
+    component::{Component, ComponentList},
     entity::{Entity, EntityID},
 };
-
-#[derive(Debug)]
-pub enum WorldCommands {
-    Push {},
-}
 
 #[derive(Default)]
 pub struct World {
@@ -24,11 +19,9 @@ impl World {
         }
     }
 
-    pub fn add(&mut self, entity: impl Into<Entity>) {
-        let entity = entity.into();
-        let id = self.new_uid();
-
-        self.entities.insert(id, entity);
+    pub fn add(&mut self, components: impl ComponentList) {
+        self.entities
+            .insert(unsafe { EntityID::unique() }, components.into());
     }
 
     pub fn query_component<'a, T: Component>(&'a self) -> impl Iterator<Item = Ref<'a, T>> {
@@ -45,15 +38,5 @@ impl World {
             .iter()
             .map(|(_, entity)| entity)
             .filter_map(|entity| entity.component_mut::<T>())
-    }
-
-    fn new_uid(&self) -> EntityID {
-        let mut id = EntityID::from_index(self.entities.len());
-
-        while self.entities.contains_key(&id) {
-            id.0 = id.0.saturating_mul(11);
-        }
-
-        id
     }
 }
