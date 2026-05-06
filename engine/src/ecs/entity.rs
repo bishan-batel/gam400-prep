@@ -1,23 +1,27 @@
 use std::{
     any::TypeId,
     cell::{Ref, RefCell, RefMut},
+    ops::Deref,
     sync::atomic::{AtomicU32, Ordering},
 };
 
 use hashbrown::HashMap;
 
-use crate::ecs::component::{Component, ComponentList};
+use crate::ecs::component::{Bundle, Component};
 use std::any::Any;
 
-#[derive(displaydoc::Display, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[displaydoc("{0}")]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
 pub struct EntityID(pub(crate) u32);
 
 static GLOBAL_ID_COUNTER: AtomicU32 = AtomicU32::new(0);
 
 impl EntityID {
-    pub unsafe fn unique() -> Self {
+    pub(crate) fn unique() -> Self {
         EntityID(GLOBAL_ID_COUNTER.fetch_add(1, Ordering::Relaxed))
+    }
+
+    pub(crate) fn reset() {
+        GLOBAL_ID_COUNTER.store(0, Ordering::Release);
     }
 
     #[must_use]
@@ -40,8 +44,12 @@ impl Entity {
 
     /// adds a component
     pub fn add<T: Component>(&mut self, component: T) -> &mut Self {
+        self.add_dyn(Box::new(RefCell::<T>::new(component)))
+    }
+
+    /// adds a dynamically typed component
+    pub fn add_dyn(&mut self, component: Box<RefCell<dyn Component>>) -> &mut Self {
         let id = component.type_id();
-        let component = Box::new(RefCell::<T>::new(component));
         self.components.insert(id, component);
         self
     }
@@ -62,14 +70,14 @@ impl Entity {
         RefMut::filter_map(borrowed, |b| (b as &mut dyn Any).downcast_mut::<T>()).ok()
     }
 
-    fn raw_component<T: Component>(&self) -> Option<&Box<RefCell<dyn Component>>> {
-        self.components.get(&TypeId::of::<T>())
+    fn raw_component<T: Component>(&self) -> Option<&RefCell<dyn Component>> {
+        self.components.get(&TypeId::of::<T>()).map(|b| b.deref())
     }
 }
 
 impl<T> From<T> for Entity
 where
-    T: ComponentList,
+    T: Bundle,
 {
     fn from(value: T) -> Self {
         let mut entity = Entity::empty();

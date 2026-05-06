@@ -8,6 +8,6 @@ pub fn component_derive(input: TokenStream) -> TokenStream {
     let name = input.ident;
 
     TokenStream::from(quote! {
-        impl engine::ecs::component::Component for #name {}
+        impl Component for #name {}
     })
 }

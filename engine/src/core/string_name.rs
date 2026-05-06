@@ -1,7 +1,7 @@
 use std::{borrow::Cow, fmt::Display, ops::Deref};
 
 /// String-Based name meant for IDs, this will limit copying
-#[derive(Debug, Clone, Hash)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct StringName(Cow<'static, str>);
 
 impl Display for StringName {
@@ -29,14 +29,6 @@ impl From<String> for StringName {
         StringName(value.into())
     }
 }
-
-impl PartialEq for StringName {
-    fn eq(&self, other: &StringName) -> bool {
-        self.0.eq(&other.0)
-    }
-}
-
-impl Eq for StringName {}
 
 impl PartialEq<str> for StringName {
     fn eq(&self, other: &str) -> bool {

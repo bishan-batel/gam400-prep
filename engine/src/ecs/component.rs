@@ -5,23 +5,24 @@ use crate::ecs::entity::Entity;
 /// A struct that can be attached to any entity
 pub trait Component: Debug + Any {}
 
-pub trait ComponentList {
+/// A bundle of components that can make an entity
+pub trait Bundle: Debug {
     fn insert(self, entity: &mut Entity);
 }
 
-impl<T: Component> ComponentList for T {
+impl<T: Component> Bundle for T {
     fn insert(self, entity: &mut Entity) {
         entity.add(self);
     }
 }
 
-impl<T1: Component> ComponentList for (T1,) {
+impl<T1: Component> Bundle for (T1,) {
     fn insert(self, entity: &mut Entity) {
         entity.add(self.0);
     }
 }
 
-impl<T1, T2> ComponentList for (T1, T2)
+impl<T1, T2> Bundle for (T1, T2)
 where
     T1: Component,
     T2: Component,
@@ -31,7 +32,7 @@ where
     }
 }
 
-impl<T1, T2, T3> ComponentList for (T1, T2, T3)
+impl<T1, T2, T3> Bundle for (T1, T2, T3)
 where
     T1: Component,
     T2: Component,
@@ -42,7 +43,7 @@ where
     }
 }
 
-impl<T1, T2, T3, T4> ComponentList for (T1, T2, T3, T4)
+impl<T1, T2, T3, T4> Bundle for (T1, T2, T3, T4)
 where
     T1: Component,
     T2: Component,
@@ -54,7 +55,7 @@ where
     }
 }
 
-impl<T1, T2, T3, T4, T5> ComponentList for (T1, T2, T3, T4, T5)
+impl<T1, T2, T3, T4, T5> Bundle for (T1, T2, T3, T4, T5)
 where
     T1: Component,
     T2: Component,
