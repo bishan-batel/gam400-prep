@@ -1,8 +1,9 @@
-use std::time::{Duration, Instant};
-
-use engine::prelude::*;
-use g4_derive::Component;
+use engine::{ecs::commands::CommandQueue, prelude::*};
 
 fn main() {
+    env_logger::init();
+
     let mut world = World::default();
+
+    world.spawn(Name::from("Hello"));
 }

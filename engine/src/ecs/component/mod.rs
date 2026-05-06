@@ -1,9 +1,19 @@
-use std::{any::Any, fmt::Debug};
+use std::{
+    any::{Any, TypeId},
+    fmt::Debug,
+};
 
 use crate::ecs::entity::Entity;
 
+mod common;
+pub use common::*;
+
 /// A struct that can be attached to any entity
-pub trait Component: Debug + Any {}
+pub trait Component: Debug + Any {
+    fn component_uid(&self) -> TypeId {
+        Any::type_id(self)
+    }
+}
 
 /// A bundle of components that can make an entity
 pub trait Bundle: Debug {
@@ -14,6 +24,11 @@ impl<T: Component> Bundle for T {
     fn insert(self, entity: &mut Entity) {
         entity.add(self);
     }
+}
+
+/// A unit bundle just leads to an empty entity
+impl Bundle for () {
+    fn insert(self, _entity: &mut Entity) {}
 }
 
 impl<T1: Component> Bundle for (T1,) {

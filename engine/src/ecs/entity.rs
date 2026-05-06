@@ -43,13 +43,13 @@ impl Entity {
     }
 
     /// adds a component
-    pub fn add<T: Component>(&mut self, component: T) -> &mut Self {
-        self.add_dyn(Box::new(RefCell::<T>::new(component)))
+    pub fn add<C: Component>(&mut self, component: C) -> &mut Self {
+        self.add_dyn(Box::new(RefCell::<C>::new(component)))
     }
 
     /// adds a dynamically typed component
     pub fn add_dyn(&mut self, component: Box<RefCell<dyn Component>>) -> &mut Self {
-        let id = component.type_id();
+        let id = component.borrow().component_uid();
         self.components.insert(id, component);
         self
     }
