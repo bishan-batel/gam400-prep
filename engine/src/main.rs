@@ -1,4 +1,4 @@
-use engine::{ecs::commands::CommandQueue, prelude::*};
+use engine::prelude::*;
 
 fn main() {
     env_logger::init();

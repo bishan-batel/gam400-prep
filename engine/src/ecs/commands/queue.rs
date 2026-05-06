@@ -52,6 +52,12 @@ impl<'a> CommandQueue<'a> {
         self.commands.len()
     }
 
+    /// Is the command queue empty / has nothing to do
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.commands.is_empty()
+    }
+
     /// Removes all commands from the queue
     pub fn clear(&mut self) {
         self.commands.clear();

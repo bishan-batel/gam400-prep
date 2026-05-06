@@ -1,5 +1,3 @@
-use std::fmt::Debug;
-
 use crate::prelude::World;
 
 mod queue;
@@ -13,9 +11,9 @@ pub trait Command {
     fn apply(self, world: &mut World);
 }
 
-impl<'a, F> Command for F
+impl<F> Command for F
 where
-    F: FnOnce(&mut World) -> () + 'a,
+    F: FnOnce(&mut World),
 {
     fn apply(self, world: &mut World) {
         self(world)
