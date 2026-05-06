@@ -35,10 +35,7 @@ impl<'a> CommandQueue<'a> {
     }
 
     /// Enqueue a new command
-    pub fn push<C>(&mut self, command: C)
-    where
-        C: Command + 'a,
-    {
+    pub fn push(&mut self, command: impl Command + 'a) {
         self.commands.push_back(Box::new(command));
     }
 
