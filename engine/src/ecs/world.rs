@@ -1,4 +1,3 @@
-use std::cell::{Ref, RefMut};
 
 use hashbrown::HashMap;
 
@@ -59,7 +58,7 @@ impl World {
         self.entities.get_mut(&id)
     }
 
-    pub fn query_component<T: Component>(&self) -> impl Iterator<Item = &(T)> {
+    pub fn query_component<T: Component>(&self) -> impl Iterator<Item = &T > {
         self.entities
             .iter()
             .filter_map(|(_, entity)| entity.component::<T>())
