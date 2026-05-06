@@ -1,13 +1,16 @@
 use std::{
     any::TypeId,
     cell::{Ref, RefCell, RefMut},
-    ops::Deref,
+    ops::{Deref, DerefMut},
     sync::atomic::{AtomicU32, Ordering},
 };
 
 use hashbrown::HashMap;
 
-use crate::ecs::component::{Bundle, Component};
+use crate::{
+    ecs::component::{Bundle, Component},
+    prelude::ComponentUIDKeyable,
+};
 use std::any::Any;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
@@ -16,7 +19,7 @@ pub struct EntityID(pub(crate) u32);
 static GLOBAL_ID_COUNTER: AtomicU32 = AtomicU32::new(0);
 
 impl EntityID {
-    pub(crate) fn unique() -> Self {
+    pub fn unique() -> Self {
         EntityID(GLOBAL_ID_COUNTER.fetch_add(1, Ordering::Relaxed))
     }
 
@@ -32,7 +35,7 @@ impl EntityID {
 
 #[derive(Debug)]
 pub struct Entity {
-    components: HashMap<TypeId, Box<RefCell<dyn Component>>>,
+    components: HashMap<TypeId, Box<dyn Component>>,
 }
 
 impl Entity {
@@ -44,34 +47,33 @@ impl Entity {
 
     /// adds a component
     pub fn add<C: Component>(&mut self, component: C) -> &mut Self {
-        self.add_dyn(Box::new(RefCell::<C>::new(component)))
-    }
-
-    /// adds a dynamically typed component
-    pub fn add_dyn(&mut self, component: Box<RefCell<dyn Component>>) -> &mut Self {
-        let id = component.borrow().component_uid();
-        self.components.insert(id, component);
+        self.components
+            .insert(component.component_uid(), Box::new(component));
         self
     }
 
+    /// adds a dynamically typed component
+    pub fn add_dyn(&mut self, component: Box<dyn Component>) -> &mut Self {
+        self.components
+            .insert(component.deref().component_uid(), component);
+        self
+    }
+
+    #[must_use]
     pub fn num_components(&self) -> usize {
         self.components.len()
     }
 
-    pub fn component<'a, T: Component>(&'a self) -> Option<Ref<'a, T>> {
-        let borrowed = self.raw_component::<T>()?.borrow();
-
-        Ref::filter_map(borrowed, |b| (b as &dyn Any).downcast_ref::<T>()).ok()
+    pub fn component<C: Component>(&self) -> Option<&C> {
+        self.components
+            .get(&C::uid())
+            .and_then(|c| (c.deref() as &dyn Any).downcast_ref::<C>())
     }
 
-    pub fn component_mut<'a, T: Component>(&'a self) -> Option<RefMut<'a, T>> {
-        let borrowed = self.raw_component::<T>()?.borrow_mut();
-
-        RefMut::filter_map(borrowed, |b| (b as &mut dyn Any).downcast_mut::<T>()).ok()
-    }
-
-    fn raw_component<T: Component>(&self) -> Option<&RefCell<dyn Component>> {
-        self.components.get(&TypeId::of::<T>()).map(|b| b.deref())
+    pub fn component_mut<C: Component>(&mut self) -> Option<&mut C> {
+        self.components
+            .get_mut(&C::uid())
+            .and_then(|c| (c.deref_mut() as &mut dyn Any).downcast_mut::<C>())
     }
 }
 

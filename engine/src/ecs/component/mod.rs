@@ -11,7 +11,17 @@ pub use common::*;
 /// A struct that can be attached to any entity
 pub trait Component: Debug + Any {
     fn component_uid(&self) -> TypeId {
-        Any::type_id(self)
+        TypeId::of::<Self>()
+    }
+}
+
+pub(crate) trait ComponentUIDKeyable {
+    fn uid() -> TypeId;
+}
+
+impl<C: Component> ComponentUIDKeyable for C {
+    fn uid() -> TypeId {
+        TypeId::of::<C>()
     }
 }
 

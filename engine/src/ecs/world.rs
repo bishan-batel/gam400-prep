@@ -3,6 +3,7 @@ use std::cell::{Ref, RefMut};
 use hashbrown::HashMap;
 
 use crate::ecs::{
+    commands::Command,
     component::{Bundle, Component},
     entity::{Entity, EntityID},
 };
@@ -24,20 +25,30 @@ impl World {
         EntityID::reset();
     }
 
-    /// Construct and add a new entity
+    /// Construct and add a new entity from a bundle
     pub fn spawn<B: Bundle>(&mut self, components: B) -> EntityID {
-        self.add(Entity::from(components))
+        let id = EntityID::unique();
+        self.spawn_with_id(Entity::from(components), id);
+        id
     }
 
-    pub fn add(&mut self, entity: Entity) -> EntityID {
-        let id = EntityID::unique();
+    pub fn spawn_with_id(&mut self, entity: Entity, id: EntityID) {
         self.entities.insert(id, entity);
-        id
     }
 
     /// Remove the entity with the given ID
     pub fn remove(&mut self, id: EntityID) -> Option<Entity> {
         self.entities.remove(&id)
+    }
+
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.entities.len()
+    }
+
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.entities.is_empty()
     }
 
     pub fn get(&self, id: EntityID) -> Option<&Entity> {
@@ -48,24 +59,25 @@ impl World {
         self.entities.get_mut(&id)
     }
 
-    pub fn query_component<'a, T: Component>(&'a self) -> impl Iterator<Item = Ref<'a, T>> {
+    pub fn query_component<T: Component>(&self) -> impl Iterator<Item = &(T)> {
         self.entities
             .iter()
-            .map(|(_, entity)| entity)
-            .filter_map(|entity| entity.component::<T>())
+            .filter_map(|(_, entity)| entity.component::<T>())
     }
 
-    pub fn query_component_mut<'a, T: Component>(
-        &'a mut self,
-    ) -> impl Iterator<Item = RefMut<'a, T>> {
+    pub fn query_component_mut<T: Component>(&mut self) -> impl Iterator<Item = &mut T> {
         self.entities
-            .iter()
-            .map(|(_, entity)| entity)
-            .filter_map(|entity| entity.component_mut::<T>())
+            .iter_mut()
+            .filter_map(|(_, entity)| entity.component_mut::<T>())
     }
 
     pub fn total_components(&self) -> usize {
         self.entities.values().map(|e| e.num_components()).sum()
+    }
+
+    /// Executes a command on this world
+    pub fn exec<C: Command>(&mut self, command: C) {
+        command.apply(self);
     }
 }
 
