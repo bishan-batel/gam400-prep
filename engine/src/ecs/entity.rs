@@ -7,17 +7,22 @@ use std::{
 use hashbrown::HashMap;
 
 use crate::{
-    ecs::component::{Bundle, Component},
+    ecs::component::{self, Bundle, Component},
     prelude::ComponentUIDKeyable,
 };
 use std::any::Any;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
-pub struct EntityID(pub(crate) u32);
+pub struct EntityID(u32);
 
 static GLOBAL_ID_COUNTER: AtomicU32 = AtomicU32::new(0);
 
 impl EntityID {
+    /// # Safety
+    pub unsafe fn from_unchecked(id: u32) -> Self {
+        Self(id)
+    }
+
     pub fn unique() -> Self {
         EntityID(GLOBAL_ID_COUNTER.fetch_add(1, Ordering::Relaxed))
     }
@@ -46,16 +51,23 @@ impl Entity {
 
     /// adds a component
     pub fn add<C: Component>(&mut self, component: C) -> &mut Self {
-        self.components
-            .insert(component.component_uid(), Box::new(component));
+        self.components.insert(component.uid(), Box::new(component));
         self
     }
 
     /// adds a dynamically typed component
     pub fn add_dyn(&mut self, component: Box<dyn Component>) -> &mut Self {
-        self.components
-            .insert(component.deref().component_uid(), component);
+        self.components.insert(component.deref().uid(), component);
         self
+    }
+
+    pub fn remove<C: Component>(&mut self) -> Option<Box<C>> {
+        let component: Box<dyn Any> = self.remove_by_uid(Self::uid::<C>())?;
+        component.downcast().ok()
+    }
+
+    pub fn remove_by_uid(&mut self, uid: TypeId) -> Option<Box<dyn Component>> {
+        self.components.remove(&uid)
     }
 
     #[must_use]
@@ -63,15 +75,23 @@ impl Entity {
         self.components.len()
     }
 
+    pub fn has_component<C: Component>(&self) -> bool {
+        self.components.contains_key(&Self::uid::<C>())
+    }
+
+    pub(crate) fn uid<C: ComponentUIDKeyable>() -> TypeId {
+        C::uid()
+    }
+
     pub fn component<C: Component>(&self) -> Option<&C> {
         self.components
-            .get(&C::uid())
+            .get(&Self::uid::<C>())
             .and_then(|c| (c.deref() as &dyn Any).downcast_ref::<C>())
     }
 
     pub fn component_mut<C: Component>(&mut self) -> Option<&mut C> {
         self.components
-            .get_mut(&C::uid())
+            .get_mut(&Self::uid::<C>())
             .and_then(|c| (c.deref_mut() as &mut dyn Any).downcast_mut::<C>())
     }
 }
@@ -82,7 +102,7 @@ where
 {
     fn from(value: T) -> Self {
         let mut entity = Entity::empty();
-        value.insert(&mut entity);
+        value.insert_into(&mut entity);
         entity
     }
 }

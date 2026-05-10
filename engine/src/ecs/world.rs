@@ -1,4 +1,3 @@
-
 use hashbrown::HashMap;
 
 use crate::ecs::{
@@ -58,7 +57,15 @@ impl World {
         self.entities.get_mut(&id)
     }
 
-    pub fn query_component<T: Component>(&self) -> impl Iterator<Item = &T > {
+    pub fn entities(&self) -> impl Iterator<Item = &Entity> {
+        self.entities.values()
+    }
+
+    pub fn entities_mut(&mut self) -> impl Iterator<Item = &mut Entity> {
+        self.entities.values_mut()
+    }
+
+    pub fn query_component<T: Component>(&self) -> impl Iterator<Item = &T> {
         self.entities
             .iter()
             .filter_map(|(_, entity)| entity.component::<T>())
@@ -72,6 +79,12 @@ impl World {
 
     pub fn total_components(&self) -> usize {
         self.entities.values().map(|e| e.num_components()).sum()
+    }
+
+    pub fn entity_has_component<C: Component>(&self, id: EntityID) -> bool {
+        self.get(id)
+            .map(|c| c.has_component::<C>())
+            .unwrap_or(false)
     }
 
     /// Executes a command on this world

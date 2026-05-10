@@ -10,7 +10,7 @@ pub use common::*;
 
 /// A struct that can be attached to any entity
 pub trait Component: Debug + Any {
-    fn component_uid(&self) -> TypeId {
+    fn uid(&self) -> TypeId {
         TypeId::of::<Self>()
     }
 }
@@ -27,22 +27,22 @@ impl<C: Component> ComponentUIDKeyable for C {
 
 /// A bundle of components that can make an entity
 pub trait Bundle: Debug {
-    fn insert(self, entity: &mut Entity);
+    fn insert_into(self, entity: &mut Entity);
 }
 
 impl<T: Component> Bundle for T {
-    fn insert(self, entity: &mut Entity) {
+    fn insert_into(self, entity: &mut Entity) {
         entity.add(self);
     }
 }
 
 /// A unit bundle just leads to an empty entity
 impl Bundle for () {
-    fn insert(self, _entity: &mut Entity) {}
+    fn insert_into(self, _entity: &mut Entity) {}
 }
 
 impl<T1: Component> Bundle for (T1,) {
-    fn insert(self, entity: &mut Entity) {
+    fn insert_into(self, entity: &mut Entity) {
         entity.add(self.0);
     }
 }
@@ -52,7 +52,7 @@ where
     T1: Component,
     T2: Component,
 {
-    fn insert(self, entity: &mut Entity) {
+    fn insert_into(self, entity: &mut Entity) {
         entity.add(self.0).add(self.1);
     }
 }
@@ -63,7 +63,7 @@ where
     T2: Component,
     T3: Component,
 {
-    fn insert(self, entity: &mut Entity) {
+    fn insert_into(self, entity: &mut Entity) {
         entity.add(self.0).add(self.1).add(self.2);
     }
 }
@@ -75,7 +75,7 @@ where
     T3: Component,
     T4: Component,
 {
-    fn insert(self, entity: &mut Entity) {
+    fn insert_into(self, entity: &mut Entity) {
         entity.add(self.0).add(self.1).add(self.2).add(self.3);
     }
 }
@@ -88,7 +88,7 @@ where
     T4: Component,
     T5: Component,
 {
-    fn insert(self, entity: &mut Entity) {
+    fn insert_into(self, entity: &mut Entity) {
         entity
             .add(self.0)
             .add(self.1)

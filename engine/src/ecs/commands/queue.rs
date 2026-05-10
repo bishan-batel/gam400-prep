@@ -99,8 +99,11 @@ mod tests {
         queue.push(DummyCommand);
 
         assert_eq!(queue.len(), 1);
-        queue.clear();
-        assert_eq!(queue.len(), 0);
+
+        let mut world = World::new();
+        queue.flush(&mut world);
+
+        assert!(queue.is_empty());
     }
 
     #[test]
