@@ -3,7 +3,7 @@ use std::any::TypeId;
 use crate::{
     commands::{Command, CommandQueue},
     entity::EntityID,
-    prelude::{Bundle, Component, ComponentUIDKeyable, Entity},
+    prelude::{Bundle, Component, Entity},
     world::World,
 };
 
@@ -78,7 +78,7 @@ impl WorldCommands<'_> {
 
     pub fn exec<F>(&mut self, command: F) -> &mut Self
     where
-        F: FnOnce(&mut World) -> () + 'static,
+        F: FnOnce(&mut World) + 'static,
     {
         self.queue.push(command);
         self

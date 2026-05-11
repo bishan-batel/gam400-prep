@@ -43,6 +43,7 @@ pub struct Entity {
     components: HashMap<TypeId, Box<dyn Component>>,
 }
 
+#[allow(clippy::borrowed_box)]
 impl Entity {
     pub fn empty() -> Self {
         Self {
@@ -50,11 +51,11 @@ impl Entity {
         }
     }
 
-    pub(crate) fn components_mut(&mut self) -> &mut HashMap<TypeId, Box<dyn Component>> {
+    pub fn components_mut(&mut self) -> &mut HashMap<TypeId, Box<dyn Component>> {
         &mut self.components
     }
 
-    pub(crate) fn components(&self) -> &HashMap<TypeId, Box<dyn Component>> {
+    pub fn components(&self) -> &HashMap<TypeId, Box<dyn Component>> {
         &self.components
     }
 

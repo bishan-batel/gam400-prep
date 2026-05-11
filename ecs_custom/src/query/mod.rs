@@ -15,7 +15,7 @@ pub struct Query<'a, V: View> {
     _phantom: PhantomData<V>,
 }
 
-trait ComponentView<C: Component>: View {
+pub trait ComponentView<C: Component>: View {
     fn uid() -> TypeId {
         <C as ComponentUIDKeyable>::uid()
     }
