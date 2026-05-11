@@ -227,6 +227,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "ecs_custom_macros"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "either"
 version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -271,10 +279,10 @@ dependencies = [
  "bytemuck",
  "color-eyre",
  "displaydoc",
+ "ecs_custom_macros",
  "encase",
  "env_logger",
  "eyre",
- "g4-derive",
  "glam",
  "hashbrown",
  "log",
@@ -327,14 +335,6 @@ name = "foldhash"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "77ce24cb58228fbb8aa041425bb1050850ac19177686ea6e0f41a70416f56fdb"
-
-[[package]]
-name = "g4-derive"
-version = "0.1.0"
-dependencies = [
- "quote",
- "syn",
-]
 
 [[package]]
 name = "gimli"

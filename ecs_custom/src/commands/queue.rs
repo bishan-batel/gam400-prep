@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 
 use super::Command;
-use crate::ecs::world::World;
+use crate::world::World;
 
 /// Structure for encoding deferred commands to be applied to a World
 #[derive(Default)]
@@ -69,7 +69,7 @@ mod tests {
     use std::cell::Cell;
 
     use crate::{
-        ecs::commands::{Command, CommandQueue},
+        commands::{Command, CommandQueue},
         prelude::World,
     };
 

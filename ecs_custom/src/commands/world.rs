@@ -1,14 +1,10 @@
 use std::any::TypeId;
 
-use glam::Vec2;
-
 use crate::{
-    ecs::{
-        commands::{Command, CommandQueue},
-        entity::EntityID,
-        world::World,
-    },
+    commands::{Command, CommandQueue},
+    entity::EntityID,
     prelude::{Bundle, Component, ComponentUIDKeyable, Entity},
+    world::World,
 };
 
 /// Removes the entity with the given ID from the world

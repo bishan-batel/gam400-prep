@@ -7,8 +7,9 @@ use std::{
 use hashbrown::HashMap;
 
 use crate::{
-    ecs::component::{self, Bundle, Component},
+    component::{Bundle, Component},
     prelude::ComponentUIDKeyable,
+    query::View,
 };
 use std::any::Any;
 
@@ -49,6 +50,14 @@ impl Entity {
         }
     }
 
+    pub(crate) fn components_mut(&mut self) -> &mut HashMap<TypeId, Box<dyn Component>> {
+        &mut self.components
+    }
+
+    pub(crate) fn components(&self) -> &HashMap<TypeId, Box<dyn Component>> {
+        &self.components
+    }
+
     /// adds a component
     pub fn add<C: Component>(&mut self, component: C) -> &mut Self {
         self.components.insert(component.uid(), Box::new(component));
@@ -86,14 +95,24 @@ impl Entity {
     pub fn component<C: Component>(&self) -> Option<&C> {
         self.components
             .get(&Self::uid::<C>())
-            .and_then(|c| (c.deref() as &dyn Any).downcast_ref::<C>())
+            .and_then(Self::downcast)
     }
 
     pub fn component_mut<C: Component>(&mut self) -> Option<&mut C> {
         self.components
             .get_mut(&Self::uid::<C>())
-            .and_then(|c| (c.deref_mut() as &mut dyn Any).downcast_mut::<C>())
+            .and_then(Self::downcast_mut)
     }
+
+    pub(crate) fn downcast<C: Component>(component: &Box<dyn Component>) -> Option<&C> {
+        (component.deref() as &dyn Any).downcast_ref::<C>()
+    }
+
+    pub(crate) fn downcast_mut<C: Component>(component: &mut Box<dyn Component>) -> Option<&mut C> {
+        (component.deref_mut() as &mut dyn Any).downcast_mut::<C>()
+    }
+
+    pub fn view<V: View>(&mut self) {}
 }
 
 impl<T> From<T> for Entity

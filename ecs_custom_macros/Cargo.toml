@@ -1,5 +1,5 @@
 [package]
-name = "g4-derive"
+name = "ecs_custom_macros"
 version = "0.1.0"
 edition = "2024"
 

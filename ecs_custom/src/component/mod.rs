@@ -3,7 +3,7 @@ use std::{
     fmt::Debug,
 };
 
-use crate::ecs::entity::Entity;
+use crate::entity::Entity;
 
 mod common;
 pub use common::*;

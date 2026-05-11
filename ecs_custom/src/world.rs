@@ -1,6 +1,6 @@
 use hashbrown::HashMap;
 
-use crate::ecs::{
+use crate::{
     commands::Command,
     component::{Bundle, Component},
     entity::{Entity, EntityID},

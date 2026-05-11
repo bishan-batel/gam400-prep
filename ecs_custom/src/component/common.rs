@@ -1,5 +1,5 @@
 use super::Component;
-use g4_derive::Component;
+use ecs_custom_macros::Component;
 
 #[derive(Component, Debug)]
 pub struct Name(pub String);
