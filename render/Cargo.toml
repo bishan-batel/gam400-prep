@@ -1,0 +1,46 @@
+[package]
+name = "render"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bitflags = { version = "2.11.1", features = ["bytemuck", "serde", "std"] }
+bytemuck = { version = "1.25.0", features = ["derive", "wasm_simd", "align_offset"] }
+color-eyre = "0.6.5"
+displaydoc = "0.2.5"
+encase = "0.12.0"
+eyre = "0.6.12"
+glam = { version = "0.32.1", features = ["rand", "approx", "bytemuck", "serde", "encase", "zerocopy"] }
+hashbrown = { version = "0.17.0", features = ["rayon"] }
+serde = "1.0.228"
+serde_ron = "1.0.0"
+thiserror = "2.0.18"
+log = "0.4.29"
+env_logger = "0.11.10"
+winit = { version = "0.30.13", features = ["rwh_05", "serde"] }
+pollster = "0.4.0"
+wgpu = { version = "29.0.1", features = [
+	"dx12",
+	"gles",
+	"metal",
+	"parking_lot",
+	"std",
+	"vulkan",
+	"webgpu",
+	"wgsl",
+	"serde",
+	"strict_asserts",
+] }
+bevy_ecs = "0.18.1"
+bevy_app = "0.18.1"
+tokio = { version = "1.52.3", features = ["parking_lot", "io-std", "macros"] }
+parking_lot = { version = "0.12.5", features = ["arc_lock"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+console_error_panic_hook = "0.1.6"
+console_log = "1.0"
+wgpu = { version = "29.0.1", features = ["serde", "webgl"] }
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4.30"
+web-sys = { version = "0.3", features = ["Document", "Window", "Element"] }
+
