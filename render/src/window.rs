@@ -1,49 +1,46 @@
 use std::sync::Arc;
 
-use bevy_ecs::resource::Resource;
 use glam::{UVec2, uvec2};
-use wgpu::SurfaceConfiguration;
+use wgpu::{Adapter, Surface, SurfaceConfiguration, TextureFormat};
 
-use crate::renderer::{device::RenderDevice, instance::RenderInstance};
+use crate::renderer::device::RenderDevice;
 
-#[derive(Resource, Debug)]
+#[derive(Debug)]
 pub struct Window {
     device: RenderDevice,
     size: UVec2,
     window: Arc<winit::window::Window>,
-    surface: wgpu::Surface<'static>,
+    surface: Surface<'static>,
     config: SurfaceConfiguration,
     is_surface_configured: bool,
+    swapchain_format: TextureFormat,
 }
 
 impl Window {
     pub fn new(
-        instance: RenderInstance,
         device: RenderDevice,
-        adapter: wgpu::Adapter,
+        adapter: &Adapter,
+        surface: Surface<'static>,
+        config: SurfaceConfiguration,
         window: Arc<winit::window::Window>,
     ) -> eyre::Result<Self> {
         // initial window size
-        let size = window.inner_size();
-        let size = uvec2(size.width, size.height);
+        let size = uvec2(config.width, config.height);
 
-        // create the window surface
-        let surface = instance.create_surface(window.clone())?;
+        let swapchain_capabilities = surface.get_capabilities(&adapter);
 
-        // get default configuration
-        let Some(config) = surface.get_default_config(&adapter, size.x, size.y) else {
-            eyre::bail!("Surface is not supported by the given adapter");
+        let Some(swapchain_format) = swapchain_capabilities.formats.first().cloned() else {
+            eyre::bail!("Swapchain / Window Surface is incompatable with this device's adapter");
         };
 
-        surface.configure(&device, &config);
-
         Ok(Self {
-            device,
             size,
+            device,
             window,
             is_surface_configured: false,
             config,
             surface,
+            swapchain_format,
         })
     }
 
@@ -55,7 +52,7 @@ impl Window {
         self.size
     }
 
-    pub fn surface(&self) -> &wgpu::Surface<'_> {
+    pub fn surface(&self) -> &Surface<'_> {
         &self.surface
     }
 
