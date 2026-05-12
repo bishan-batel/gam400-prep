@@ -9,7 +9,7 @@ use winit::{
 };
 
 #[derive(Debug)]
-pub(crate) struct WinitApp {
+pub struct WinitApp {
     bevy: App,
     window: Option<Arc<Window>>,
 }
@@ -19,17 +19,14 @@ impl WinitApp {
         Self { bevy, window: None }
     }
 
-    #[must_use]
     pub fn bevy(&self) -> &App {
         &self.bevy
     }
 
-    #[must_use]
     pub fn bevy_mut(&mut self) -> &mut App {
         &mut self.bevy
     }
 
-    #[must_use]
     pub fn window(&self) -> Option<&Arc<Window>> {
         self.window.as_ref()
     }
@@ -49,7 +46,7 @@ impl ApplicationHandler for WinitApp {
 
     fn window_event(
         &mut self,
-        event_loop: &ActiveEventLoop,
+        _event_loop: &ActiveEventLoop,
         window_id: WindowId,
         event: WindowEvent,
     ) {
@@ -61,9 +58,6 @@ impl ApplicationHandler for WinitApp {
             return;
         }
 
-        match event {
-            WindowEvent::RedrawRequested => (),
-            _ => {}
-        }
+        if event == WindowEvent::RedrawRequested {}
     }
 }

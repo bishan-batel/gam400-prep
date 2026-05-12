@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use bevy_ecs::resource::Resource;
-use eyre::bail;
 use glam::{UVec2, uvec2};
 use wgpu::SurfaceConfiguration;
 
@@ -9,7 +8,6 @@ use crate::renderer::{device::RenderDevice, instance::RenderInstance};
 
 #[derive(Resource, Debug)]
 pub struct Window {
-    instance: RenderInstance,
     device: RenderDevice,
     size: UVec2,
     window: Arc<winit::window::Window>,
@@ -40,7 +38,6 @@ impl Window {
         surface.configure(&device, &config);
 
         Ok(Self {
-            instance,
             device,
             size,
             window,
