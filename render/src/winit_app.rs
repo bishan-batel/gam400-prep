@@ -10,8 +10,10 @@ use winit::{
 
 use crate::{renderer, window::Window};
 
+/// Internal winit-compatable app for listening to winit events / managing the winit window. This
+/// also takes constrol of updating bevy's world(s)
 #[derive(Debug)]
-pub struct WinitApp {
+pub(crate) struct WinitApp {
     bevy: App,
 }
 

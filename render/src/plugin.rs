@@ -6,19 +6,15 @@ use winit::event_loop::EventLoop;
 
 use crate::winit_app::WinitApp;
 
-#[derive(Resource)]
-pub struct WindowShouldExit(pub bool);
-
+/// Plugin for using the test GAM400 custom rendererer for bevy
 #[derive(Debug, Default)]
-pub struct WinitPlugin;
+pub struct GamRenderer;
 
-impl Plugin for WinitPlugin {
+impl Plugin for GamRenderer {
     fn build(&self, app: &mut App) {
         app.set_runner(winit_runner);
     }
 }
-
-impl WinitPlugin {}
 
 /// runner for the app using winit
 fn winit_runner(mut app: App) -> AppExit {
