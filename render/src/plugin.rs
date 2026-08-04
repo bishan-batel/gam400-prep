@@ -21,7 +21,7 @@ impl Plugin for WinitPlugin {
 impl WinitPlugin {}
 
 /// runner for the app using winit
-fn winit_runner(app: App) -> AppExit {
+fn winit_runner(mut app: App) -> AppExit {
     let event_loop = match EventLoop::new() {
         Ok(ev) => ev,
         Err(err) => {
@@ -29,6 +29,9 @@ fn winit_runner(app: App) -> AppExit {
             return AppExit::Error(NonZeroU8::new(1).expect("1 is not zero."));
         }
     };
+
+    app.finish();
+    app.cleanup();
 
     if let Err(err) = event_loop.run_app(&mut WinitApp::new(app)) {
         log::error!("Failed to run event loop: {err}");

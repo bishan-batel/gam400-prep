@@ -1,11 +1,12 @@
-use std::sync::Arc;
+use std::{ops::Deref, sync::Arc};
 
+use bevy_ecs::resource::Resource;
 use glam::{UVec2, uvec2};
 use wgpu::{Adapter, Surface, SurfaceConfiguration, TextureFormat};
 
-use crate::renderer::device::RenderDevice;
+use crate::renderer::{adapter::RenderAdapter, device::RenderDevice};
 
-#[derive(Debug)]
+#[derive(Debug, Resource)]
 pub struct Window {
     device: RenderDevice,
     size: UVec2,
@@ -19,7 +20,7 @@ pub struct Window {
 impl Window {
     pub fn new(
         device: RenderDevice,
-        adapter: &Adapter,
+        adapter: RenderAdapter,
         surface: Surface<'static>,
         config: SurfaceConfiguration,
         window: Arc<winit::window::Window>,
@@ -69,5 +70,13 @@ impl Window {
         self.config.height = size.y;
         self.surface.configure(&self.device, &self.config);
         self.is_surface_configured = true;
+    }
+}
+
+impl Deref for Window {
+    type Target = winit::window::Window;
+
+    fn deref(&self) -> &Self::Target {
+        &self.window
     }
 }

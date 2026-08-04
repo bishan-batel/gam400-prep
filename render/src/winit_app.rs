@@ -5,18 +5,19 @@ use winit::{
     application::ApplicationHandler,
     event::WindowEvent,
     event_loop::ActiveEventLoop,
-    window::{Window, WindowAttributes, WindowId},
+    window::{WindowAttributes, WindowId},
 };
+
+use crate::{renderer, window::Window};
 
 #[derive(Debug)]
 pub struct WinitApp {
     bevy: App,
-    window: Option<Arc<Window>>,
 }
 
 impl WinitApp {
     pub fn new(bevy: App) -> Self {
-        Self { bevy, window: None }
+        Self { bevy }
     }
 
     pub fn bevy(&self) -> &App {
@@ -26,22 +27,34 @@ impl WinitApp {
     pub fn bevy_mut(&mut self) -> &mut App {
         &mut self.bevy
     }
-
-    pub fn window(&self) -> Option<&Arc<Window>> {
-        self.window.as_ref()
-    }
 }
 
 impl ApplicationHandler for WinitApp {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
-        if self.window.is_some() {
+        if self.bevy.world().contains_resource::<Window>() {
             return;
         }
 
-        self.window = event_loop
+        let window = event_loop
             .create_window(WindowAttributes::default().with_title("Hello World"))
             .map(Arc::new)
-            .ok();
+            .expect("Failed to create window");
+
+        log::trace!("Setting up resources");
+
+        let (device, queue, adapter, instance, window) =
+            pollster::block_on(renderer::setup_init_render_resources(window))
+                .expect("Failed to setup render resources");
+
+        self.bevy.insert_resource(device);
+        self.bevy.insert_resource(queue);
+        self.bevy.insert_resource(adapter);
+        self.bevy.insert_resource(instance);
+        self.bevy.insert_resource(window);
+
+        log::info!(
+            "Inserted Render Device, Queue, Adapter, Instance, and Window into Bevy Resource's"
+        );
     }
 
     fn window_event(
@@ -50,7 +63,7 @@ impl ApplicationHandler for WinitApp {
         window_id: WindowId,
         event: WindowEvent,
     ) {
-        let Some(window) = self.window.as_deref() else {
+        let Some(window) = self.bevy.world().get_resource::<Window>() else {
             return;
         };
 
@@ -58,6 +71,8 @@ impl ApplicationHandler for WinitApp {
             return;
         }
 
-        if event == WindowEvent::RedrawRequested {}
+        if event == WindowEvent::RedrawRequested {
+            self.bevy.update();
+        }
     }
 }

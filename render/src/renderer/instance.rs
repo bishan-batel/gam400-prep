@@ -1,6 +1,8 @@
 use std::{ops::Deref, sync::Arc};
 
-#[derive(Debug, Clone)]
+use bevy_ecs::resource::Resource;
+
+#[derive(Resource, Debug, Clone)]
 pub struct RenderInstance(Arc<wgpu::Instance>);
 
 impl Deref for RenderInstance {

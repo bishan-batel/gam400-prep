@@ -1,8 +1,9 @@
 use std::{ops::Deref, sync::Arc};
 
+use bevy_ecs::resource::Resource;
 use wgpu::Device;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Resource, Clone)]
 pub struct RenderDevice(Arc<Device>);
 
 impl Deref for RenderDevice {
