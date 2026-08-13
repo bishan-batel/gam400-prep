@@ -1,10 +1,14 @@
 use std::num::NonZeroU8;
 
-use bevy_app::{App, AppExit, Plugin};
-use bevy_ecs::resource::Resource;
+use bevy_app::{App, AppExit, Plugin, Update};
+use bevy_ecs::{
+    resource::Resource,
+    system::{Query, Res, ResMut},
+};
+use glam::UVec2;
 use winit::event_loop::EventLoop;
 
-use crate::winit_app::WinitApp;
+use crate::{renderer::queue::RenderQueue, window::Window, winit_app::WinitApp};
 
 /// Plugin for using the test GAM400 custom rendererer for bevy
 #[derive(Debug, Default)]
@@ -12,8 +16,12 @@ pub struct GamRenderer;
 
 impl Plugin for GamRenderer {
     fn build(&self, app: &mut App) {
-        app.set_runner(winit_runner);
+        app.set_runner(winit_runner).add_systems(Update, render);
     }
+}
+
+fn render(mut window: ResMut<Window>, queue: Res<RenderQueue>) {
+    window.render(&queue);
 }
 
 /// runner for the app using winit

@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use bevy_app::App;
+use glam::UVec2;
 use winit::{
     application::ApplicationHandler,
     event::WindowEvent,
@@ -65,18 +66,17 @@ impl ApplicationHandler for WinitApp {
         window_id: WindowId,
         event: WindowEvent,
     ) {
-        let Some(window) = self.bevy.world().get_resource::<Window>() else {
-            return;
-        };
+        {
+            let Some(window) = self.bevy.world().get_resource::<Window>() else {
+                return;
+            };
 
-        if window.id() != window_id {
-            return;
+            if event != WindowEvent::RedrawRequested {
+                return;
+            }
+            window.request_redraw();
         }
 
-        window.request_redraw();
-
-        if event == WindowEvent::RedrawRequested {
-            self.bevy.update();
-        }
+        self.bevy.update();
     }
 }

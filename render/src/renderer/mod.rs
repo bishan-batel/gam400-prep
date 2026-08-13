@@ -38,6 +38,7 @@ pub(crate) async fn setup_init_render_resources(
             force_fallback_adapter: false,
             // Request an adapter which can render to our surface
             compatible_surface: Some(&surface),
+            apply_limit_buckets: false,
         })
         .await
         // hard crash if we can't render anything
