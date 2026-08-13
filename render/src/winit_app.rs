@@ -73,6 +73,8 @@ impl ApplicationHandler for WinitApp {
             return;
         }
 
+        window.request_redraw();
+
         if event == WindowEvent::RedrawRequested {
             self.bevy.update();
         }
