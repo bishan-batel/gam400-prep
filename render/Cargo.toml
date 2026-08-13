@@ -8,9 +8,8 @@ bitflags = { version = "2.11.1", features = ["bytemuck", "serde", "std"] }
 bytemuck = { version = "1.25.0", features = ["derive", "wasm_simd", "align_offset"] }
 color-eyre = "0.6.5"
 displaydoc = "0.2.5"
-encase = "0.12.0"
 eyre = "0.6.12"
-glam = { version = "0.32.1", features = ["rand", "approx", "bytemuck", "serde", "encase", "zerocopy"] }
+glam = { version = "0.32.1", features = ["rand", "approx", "bytemuck", "serde", "zerocopy"] }
 hashbrown = { version = "0.17.0", features = ["rayon"] }
 serde = "1.0.228"
 serde_ron = "1.0.0"

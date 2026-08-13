@@ -1,15 +1,17 @@
 {
   inputs = {
-    naersk.url = "github:nix-community/naersk/master";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    utils.url = "github:numtide/flake-utils";
+    flake-utils.url = "github:numtide/flake-utils";
+    rust-overlay.url = "github:oxalica/rust-overlay";
+    rust-overlay.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, utils, naersk }:
-    utils.lib.eachDefaultSystem (system:
+  outputs = { self, nixpkgs, flake-utils, rust-overlay, }:
+    flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs { inherit system; };
-        naersk-lib = pkgs.callPackage naersk { };
+        pkgs = nixpkgs.legacyPackages.${system};
+        pkgsCross = pkgs.pkgsCross.aarch64-multiplatform;
+
         libPath = with pkgs; [
           libffi
           spirv-tools
@@ -18,45 +20,67 @@
           vulkan-loader
           vulkan-headers
           vulkan-validation-layers
-          shader-slang
         ] ++ (if pkgs.stdenv.isLinux then (with pkgs; [
-          wayland-protocols
-          wayland.dev
-          wayland
-          libGL
-          libxcb
-          libX11
-          libXrandr
-          libXinerama
-          libXcursor
-          libXi
-          libxkbcommon
-          libglvnd
-        ]) else []); 
+            wayland-protocols
+            wayland.dev
+            wayland
+            libGL
+            libxcb
+            libX11
+            libXrandr
+            libXinerama
+            libXcursor
+            libXi
+            libxkbcommon
+            libglvnd
+          ]) else []); 
 
+        platformDeps = (if pkgs.stdenv.isDarwin then with pkgsCross; [ 
+          libiconv 
+        ] else with pkgsCross; [ 
+            libdrm.dev 
+            libdecor.dev
+            mesa
+          ]);
+
+        rust-bin = rust-overlay.lib.mkRustBin { } pkgsCross.buildPackages;
       in
         {
-        # defaultPackage = naersk-lib.buildPackage ./.;
-        devShell = pkgs.mkShell rec {
-          packages = with pkgs; [
-            bacon
-          ];
-          nativeBuildInputs = [ ] ++ libPath;
+        devShell = 
+          pkgsCross.callPackage ( { mkShell, pkg-config, openssl, stdenv, }: mkShell {
 
-          buildInputs = with pkgs; [ 
-            cargo rustc rustfmt pre-commit rustPackages.clippy wasm-pack pkg-config 
-            shader-slang 
-          ];
+            nativeBuildInputs = [
+              (rust-bin.fromRustupToolchainFile ./toolchain.toml)
+              pkg-config
+              pkgs.cargo
+              pkgs.rustc
+            ] ++ platformDeps ++ libPath;
 
-          env = {
-            RUST_SRC_PATH = pkgs.rustPlatform.rustLibSrc;
-            LD_LIBRARY_PATH = "${pkgs.lib.makeLibraryPath libPath}";
+            buildInputs = with pkgs; [ 
+              pkg-config 
+              pkgsCross.stdenv.cc
+              pkgs.cmake
+            ];
+
+            env = {
+              # RUST_SRC_PATH = pkgs.rustPlatform.rustLibSrc;
+              LD_LIBRARY_PATH = "${pkgs.lib.makeLibraryPath libPath}";
+              PKG_CONFIG_ALLOW_CROSS = "1";
 
 
-            VK_LAYER_PATH = "${pkgs.vulkan-validation-layers}/share/vulkan/explicit_layer.d";
-            VULKAN_SDK = "${pkgs.vulkan-validation-layers}/share/vulkan/explicit_layer.d";
-          };
-        };
+              VK_LAYER_PATH = "${pkgs.vulkan-validation-layers}/share/vulkan/explicit_layer.d";
+              VULKAN_SDK = "${pkgs.vulkan-validation-layers}/share/vulkan/explicit_layer.d";
+
+              CC_aarch64_unknown_linux_gnu = "${pkgsCross.stdenv.cc.targetPrefix}cc";
+              CXX_aarch64_unknown_linux_gnu = "${pkgsCross.stdenv.cc.targetPrefix}c++";
+              
+              HOST_CC = "clang";
+
+              # QEMU_FD = "${pkgs.qemu}/share/qemu/edk2-aarch64-code.fd";
+              CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER = "${pkgsCross.stdenv.cc.targetPrefix}cc";
+              CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_RUNNER = "qemu-aarch64";
+            };
+          }) {};
       }
     );
 }

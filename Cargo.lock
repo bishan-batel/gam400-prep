@@ -2637,7 +2637,6 @@ dependencies = [
  "console_error_panic_hook",
  "console_log",
  "displaydoc",
- "encase",
  "env_logger",
  "eyre",
  "glam 0.32.1",
